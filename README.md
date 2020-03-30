@@ -1,1 +1,1 @@
-# FCMbot-NandX
+# OXbot - the little brother of FCMBot
