@@ -6,14 +6,10 @@ A version of OX that utilises class inheritence to judge relative readability
 @author: terrylines
 """
 
-from game import Player
 from game import Game
 
 class OX(Game):
-
-    def _isCorrectNumberOfBots(self,numberOfBots):
-        """ returns whether the number of bots is valid for the game"""    
-        return numberOfBots==2
+    numberOfPlayers=2
         
     def _setupGame(self):
         """ initialises the game"""
@@ -57,59 +53,24 @@ class OX(Game):
     def load(self,savedGame):
         self.__dict__=savedGame
 
-    # =============================================================================
-    # class Player(Player):
-    #   
-    #         
-    #     def _setup(self):
-    #         """sets up the player with game specific attributes"""
-    #         self._playerX=self.index==0
-    #         
-    #         
-    #     def __str__(self):
-    #         """ Returns the current game in a human-friendly format"""
-    #         return  self.game.__str__
-    #     
-    #     @property
-    #     def state(self):
-    #         """ a bot-friendly format of the gameState from the point of view of current player"""
-    #         return self.game._board if self._playerX else [-i for i in self.game._board] 
-    # 
-    #     @property
-    #     def actions(self):
-    #         """ a bot-friendly list of possible actions from the point of view of current player"""
-    #         return [i for i, x in enumerate(self.state) if x == 0]   
-    # 
-    # =============================================================================
-class Player(OX.Player):
-    """ these are players inside the game. Their bot attribute links to a bot which drives players decisions"""
-    def __init__(self,game,index,bot):
-        self.game=game
-        self.bot=bot
-        self.index=index
-        self._setup()
+    class Player(Game.Player):
+        """ these are players inside the game. Their bot attribute links to a bot which drives players decisions"""
+            
+        def _setup(self):
+            """sets up the player with game specific attributes"""
+            self._playerX=self.index==0
+            pass
+            
+        def __str__(self):
+            """ Returns the current game in a human-friendly format"""
+            return  self.game.__str__
         
-    def _setup(self):
-        """sets up the player with game specific attributes"""
-        self._playerX=self.index==0
-        pass
-        
-    def __str__(self):
-        """ Returns the current game in a human-friendly format"""
-        return  self.game.__str__
+        @property
+        def state(self):
+            """ a bot-friendly format of the gameState from the point of view of current player"""
+            return self.game._board if self._playerX else [-i for i in self.game._board] 
     
-    @property
-    def state(self):
-        """ a bot-friendly format of the gameState from the point of view of current player"""
-        return self.game._board if self._playerX else [-i for i in self.game._board] 
-
-    @property
-    def actions(self):
-        """ a bot-friendly list of possible actions from the point of view of current player"""
-        return [i for i, x in enumerate(self.state) if x == 0]   
-  
-    def prompt(self):
-        action = self.bot.promptBot(self)
-        if action not in self.actions:
-            raise IOError("Invalid action passed to game by" + self)
-        return action
+        @property
+        def actions(self):
+            """ a bot-friendly list of possible actions from the point of view of current player"""
+            return [i for i, x in enumerate(self.state) if x == 0]   

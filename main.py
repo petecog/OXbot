@@ -20,11 +20,8 @@ sum(scores1)/10000
 scores2=player3.play(Game = OX.Game,reward = bots.marginReward, opponents = [player2],repeats = 10000)
 sum(scores2)/10000
 
-scores1=player1.play(Game = OX_short.OX,reward = bots.marginReward, opponents = [player2],repeats = 1)
-sum(scores1)/10000
+scores3=player1.play(Game = OX_short.OX,reward = bots.marginReward, opponents = [player2],repeats = 1)
+sum(scores3)/10000
 
-scores2=player3.play(Game = OX.Game,reward = bots.marginReward, opponents = [player2],repeats = 10000)
-sum(scores2)/10000
-
-test=OX_short.OX([player1,player2])
-OX_short.Player()
+scores4=player3.play(Game = OX_short.OX,reward = bots.marginReward, opponents = [player2],repeats = 10000)
+sum(scores4)/10000
