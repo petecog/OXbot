@@ -117,5 +117,5 @@ class Game:
         def prompt(self):
             action = self.bot.promptBot(self)
             if action not in self.actions:
-                raise IOError("Invalid action passed to game by" + self)
+                raise IOError("Invalid action passed to game by " + self.bot.name)
             return action

@@ -22,16 +22,7 @@ class OX(Game):
     
     def __str__(self):
         """ Returns the current gameState and possible actions in a human-friendly format"""
-        def row(values):
-            tile_image = ('O',' ','X')
-            tiles = [tile_image[i+1] for i in values] 
-            return '|'.join(tiles) + '\n'
-        blankrow = '-----\n'
-        grid = blankrow.join( [row(self._board[3*i:3*i+3]) for i in range(0,3) ] )
-        player = "Current Player is " + ('X' if self._playerX else 'O') + '\n'
-        bot = "Input required from " + self.bot.name + '\n'
-        actions = 'Actions are ' + ','.join([str (i) for i in self.actions]) + '\n'
-        return  grid + player +bot + actions
+        return self.currentPlayer.__str__
     
     def _getScores(self):
         """Returns the final outcome for all players"""
@@ -62,8 +53,16 @@ class OX(Game):
             pass
             
         def __str__(self):
-            """ Returns the current game in a human-friendly format"""
-            return  self.game.__str__
+            def row(values):
+                tile_image = ('O',' ','X')
+                tiles = [tile_image[i+1] for i in values] 
+                return '|'.join(tiles) + '\n'
+            blankrow = '-----\n'
+            grid = blankrow.join( [row(self.game._board[3*i:3*i+3]) for i in range(0,3) ] )
+            player = "Current Player is " + ('X' if self._playerX else 'O') + '\n'
+            bot = "Input required from " + self.bot.name + '\n'
+            actions = 'Actions are ' + ','.join([str (i) for i in self.actions]) + '\n'
+            return  grid + player + bot + actions
         
         @property
         def state(self):

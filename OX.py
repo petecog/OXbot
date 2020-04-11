@@ -53,7 +53,7 @@ class Game:
         player = "Current Player is " + ('X' if self._playerX else 'O') + '\n'
         bot = "Input required from " + self.bot.name + '\n'
         actions = 'Actions are ' + ','.join([str (i) for i in self.actions]) + '\n'
-        return  grid + player +bot + actions
+        return  grid + player# +bot + actions
     
     def _getScores(self):
         
