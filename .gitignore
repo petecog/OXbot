@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#vscode config - this is usually personal pref, so excluding it
+.vscode
