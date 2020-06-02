@@ -1,6 +1,2 @@
 language = "python3"
-<<<<<<< HEAD
 run = "python3 NH\\ Code\\ Test.py"
-=======
-run = "python3 main.py"
->>>>>>> origin/replit-readme
