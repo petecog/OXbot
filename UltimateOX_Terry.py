@@ -99,7 +99,7 @@ class OXboard:
 		player : int 
 			either 1 (X) or -1(O)
 		"""
-		assert 0 <= square <=8 and self.state[square] is None, "Not a valid choice of square"
+		assert square in self.actions, "Not a valid choice of square"
 		assert self.score==None, "Attempting to play on a finished board"
 		assert player in {1,-1}, "Not a player"
 		self.state[square]= player
@@ -112,7 +112,7 @@ class OXboard:
 		x_win= any(all(self.state[i]== 1 for i in line) for line in self.winning_lines)
 		o_win= any(all(self.state[i]== -1 for i in line) for line in self.winning_lines)
 		assert not (x_win and o_win), "Somehow both players have won the board"
-		draw= not x_win and not o_win and not any (square is None for square in self.state) 
+		draw= not x_win and not o_win and len(self.actions)==[]
 		if x_win:
 			self.score=1
 		elif o_win:
@@ -161,7 +161,6 @@ class superOXboard(OXboard):
 	def __init__(self):
 		""" Initialises blank boards """
 		self.boards=[OXboard() for _ in range(9)]
-		self.state=[None]*9
 		self.score=None
 	
 	def play(self,move,player):
@@ -175,10 +174,9 @@ class superOXboard(OXboard):
 			either 1(X) or -1(O
 		"""
 		board,square = move
-		assert 0 <= board <=8 and self.state[board] is None, "Not a valid choice of board"
+		assert board in self.actions, "Not a valid choice of board"
 		assert self.score==None, "Attempting to play in a finished game"
 		self.boards[board].play(square,player)
-		self.state[board]=self.boards[board].score
 		self._updateScore()
 
 	def _printRow(self,n):
@@ -187,7 +185,12 @@ class superOXboard(OXboard):
 		rows=[" "+ " || ".join(board._printRow(i) for board in boards) + " " for i in range(3)]
 		gap="\n "+ " || ".join([OXboard._printHorizontalDivide() for _ in range(3)])+ " \n"
 		return gap.join(rows)
-	
+
+	@property
+	def state(self):
+		""" list of board state"""
+		return [board.score for board in self.boards]
+
 	@staticmethod
 	def _printHorizontalDivide():
 		blank = "||".join([" "*7]*3)
