@@ -53,6 +53,7 @@ Notes for ultimate XO RL learning
 from bots import isBotsValid
 from random import shuffle
 from bots import Bot
+from bots import RandomBot
 
 class XOHuman(Bot):
 	def promptBot(self,player):
@@ -83,6 +84,29 @@ class OXboard:
 		(0,3,6),(1,4,7),(2,5,8),
 		(0,4,8),(2,4,6)
 		] 
+	win_x=[
+		1,None,None,None,1,
+		None,1,None,1,None,
+		None,None,1,None,None,
+		None,1,None,1,None,
+		1,None,None,None,1
+		]
+
+	win_o=[
+		None,None,1,None,None,
+		None,1,None,1,None,
+		1,None,None,None,1,
+		None,1,None,1,None,
+		None,None,1,None,None
+		]
+
+	draw=[
+		None,None,0,None,None,
+		None,None,0,None,None,
+		0,0,0,0,0,
+		None,None,0,None,None,
+		None,None,0,None,None,
+		]
 	
 	def __init__(self):
 		""" Initialises a blank board """
@@ -129,21 +153,28 @@ class OXboard:
 	
 	def __str__(self):
 		""" Returns the current gameState and possible actions in a human-friendly format"""
-		rows=[
-			self._printRow(0),
-			self._printHorizontalDivide(),
-			self._printRow(1),
-			self._printHorizontalDivide(),
-			self._printRow(2)
-			]
+		rows=[self._printRow(i) for i in range(5)]
 		return "\n".join(rows)+"\n"
 
 	def _printRow(self,n):
 		"""prints the nth row of the board"""
-		
-		row=[self._representation(self.state[i]) for i in self.winning_lines[n]]
-		return "|".join(row)
-	
+		if self.score is None:
+			if n in [1,3]:
+				return self._printHorizontalDivide()
+			else:
+				m=int(n/2 *3)
+				row=[self._representation(self.state[i]) for i in range(m,m+3)]
+				return "|".join(row)
+		elif self.score is 1:
+			row=[self._representation(self.win_x[i]) for i in range(5*n,5*n+5)]
+			return "".join(row)
+		elif self.score is -1:
+			row=[self._representation(self.win_o[i]) for i in range(5*n,5*n+5)]
+			return "".join(row)
+		else:
+			row=[self._representation(self.draw[i]) for i in range(5*n,5*n+5)]
+			return "".join(row)
+
 	@staticmethod
 	def _representation(i):
 		"""  Turns int representation into characters for viewing"""
@@ -181,10 +212,13 @@ class superOXboard(OXboard):
 
 	def _printRow(self,n):
 		"""prints the nth row of the superboard """
-		boards=[self.boards[i] for i in self.winning_lines[n]]
-		rows=[" "+ " || ".join(board._printRow(i) for board in boards) + " " for i in range(3)]
-		gap="\n "+ " || ".join([OXboard._printHorizontalDivide() for _ in range(3)])+ " \n"
-		return gap.join(rows)
+		if n in [1,3]:
+			return self._printHorizontalDivide()
+		else:
+			m=int(n//2*3)
+			boards=[self.boards[i] for i in range(m,m+3)]
+			rows=[" "+ " || ".join(board._printRow(i) for board in boards) + " " for i in range(5)]
+			return "\n".join(rows)
 
 	@property
 	def state(self):
@@ -281,3 +315,6 @@ class Player:
 		if action not in self.actions:
 			raise IOError("Invalid action passed to game by" + self)
 		return action
+
+game=Game([XOHuman("1"),RandomBot("2")])
+game.playGame()
