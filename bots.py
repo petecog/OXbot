@@ -7,12 +7,25 @@ Created on Tue Mar 31 20:49:00 2020
 """
 from random import choice
 
-def isBot(x):
-    return isinstance(x, Bot)
-    
+def isBotsValid(n,bots):
+		""" Checks the bots are the correct class and n of them """
+		if all([isinstance(bot, Bot) for bot in bots]) and len(bots)==n:
+			return True
+		return False
+
+		
+
+
+
+
 def marginReward(score,player):
     opponents = {key:value for key,value in score.items() if key != player.name }
     return score[player.name] - max(opponents.values())
+
+
+
+
+
 
 class Bot:
     def __init__(self,name):
