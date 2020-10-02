@@ -2,120 +2,100 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Apr  9 21:32:25 2020
-Monte Carlo with exploring starts approach to OX . Not implemented as i would need to create a new OX gmae that allows arbitrary starts
+Monte Carlo with exploring starts approach to OX with random next player . Calculates the afterstate value (value of state having made an action)
+We wish to estimate V_pi the value of afterstate V if following policy pi thereafter.
+
+1. Choose a random after state and initialise an episode. Folloy policy thereafter. 
+2. For all afterstates visited, update value
+3. policy updated
+
+
 @author: terrylines
 """
 
 from bots import Bot
 from bots import RandomBot
-from random import choice
-import OX_short
+from OX_explorer import Game
+from json import dump,load
+
 
 class OXMonteCarloESBot(Bot):
     def __init__(self,name):
         self.name=name
-        self.bound=0.1
-        self.actionValues={}
+        self.values={}
         self.sampleSize={}
-        self.policy={}
-        self.actions={}
-        self.initialStates()
-        self.trainingGame=OX_short.OX(self,RandomBot("random"))
+        self.recordActions=False
+        self.game=Game((self,RandomBot("random")),randomTurn=True)
           
     def promptBot(self,game):
-        return self.policy[tuple(game.state)]
+        return self.policy(tuple(game.state))
     
-    def initialiseState(self,state):
-        self.actions[state]= [i for i, x in enumerate(state) if x == 0]
-        self.policy[state]=self.actions[state][0]
-        for action in self.actions[state]:
-            self.actionValues[(state,action)]=0
-            self.sampleSize[(state,action)]=0
-        
-    def initialStates(self):
-        start=(0,0,0,0,0,0,0,0,0)
-        self.initialiseState(start)
-        for i in range(9):
-            move=list(start)
-            move[i]=-1
-            self.initialiseState(tuple(move))
-    
-    def train(self):
-        startState,startAction=choice(self.actionValues)
-        
-        self.policyEvaluation()
-        i=0
-        while not self.policyImprovement():
-            print("improvement round "+str(i))
-            i+=1
-            self.policyEvaluation()
+    def policy(self,state):
+        """Return the action with highest valued afterstate"""
+        actions = (i for i,s in enumerate(state) if s is None)
+        def play(state,k):
+            a=list(state)
+            a[k]=1 #always from X perspective
+            return (tuple(a))
+        action = max(actions, key = lambda k: self.values.get(play(state,k),0))
+        afterstate = play(state,action)
             
+        if self.recordActions:
+            self.record.append(afterstate)
 
-    def policyEvaluation(self):
-        oldLength=len(self.stateValues)
-        delta=0
-        for state in list(self.stateValues.keys()):
-            v=self.stateValues[state]
-            self.stateValues[state]=self.ExpectedReturn(state,self.policy[state])
-            delta=max(delta,abs(v-self.stateValues[state]))
-        print(str(len(self.stateValues))+" states, delta of"+str(delta))
-        if len(self.stateValues) > oldLength or delta>self.bound:
-            self.policyEvaluation()
+        return (action)
     
-    def policyImprovement(self):    
-        stable=True
-        for state in list(self.policy):
-            a=self.policy[state]
-            possibilities={action: self.ExpectedReturn(state,action) for action in self.actions[state]}
-            self.policy[state]=max(possibilities,key=lambda x: possibilities[x])
-            if self.policy[state]!=a:
-                stable=False
-        return(stable)
-
-    def obtain(self,dic,state):
-        if state not in dic.keys():
-            self.initialiseState(state)
-        return dic[state]
+    def train(self,repeats):
+        for _ in range(repeats):
+            self.recordActions=True
+            self.record=[]
+            reward=self.game.playGame()
+            self.updateValues(reward)
         
-    def match(self,board,n):
-        winningLines=[(0,1,2),(3,4,5),(6,7,8),(0,3,6),(1,4,7),(2,5,8),(0,4,8),(2,4,6)]
-        return any ( [all([board[i]==n for i in line]) for line in winningLines])  
-   
+    def updateValues(self,reward):
+        for afterstate in self.record:
+            self.sampleSize[afterstate]=1+self.sampleSize.get(afterstate,0)
+            prior=self.values.get(afterstate,0)
+            self.values[afterstate]=prior + 1/self.sampleSize[afterstate] * (reward-prior)
 
-    def ExpectedReturn(self,state,action):
-        #if mymove is a win expected return is 1
-        #else expected return =-1 for all losses, zero for all draws and state value for all other states
+# terry=OXMonteCarloESBot("terry")
+# terry.train(1000000)
+# terry2=OXMonteCarloESBot("terry2")
+# terry2.game=Game((terry2,terry),randomTurn=True)
+# terry2.train(1000000)
+# terry.game=Game((terry,terry2),randomTurn=True)
+# terry.train(1000000)
+
+# with open('XOValues.txt', 'w') as outfile:
+#     dump({str(k): v for k, v in terry.values.items()}, outfile)
+
+import ast
+with open('XOValues.txt') as json_file:
+    data = load(json_file)
+dic={ast.literal_eval(k):v for k,v in data.items()}
+terry=OXMonteCarloESBot("terry")
+terry.values= dic
+terry2=OXMonteCarloESBot("terry2")
+terry2.game=Game((terry2,terry),randomTurn=True)
+terry2.values= dic
+terry2.train(4000000)
+terry.game=Game((terry,terry2),randomTurn=True)
+terry.train(4000000)
+
+with open('XOValues.txt', 'w') as outfile:
+    dump({str(k): v for k, v in terry.values.items()}, outfile)
+
+
+a=sum(terry.game.playGame() for _ in range(10000))
+b=sum(terry2.game.playGame() for _ in range(10000))
+print(a)
+print(b)
+a=sum(terry.game.playGame(board=[None]*9) for _ in range(10000))
+b=sum(terry2.game.playGame(board=[None]*9) for _ in range(10000))
+print(a)
+print(b)
     
     
-            
-       
-        if action not in self.obtain(self.actions,state):
-            return -100
-        myMove=list(state)
-        myMove[action]=1
-        myMove=tuple(myMove)
-        
-        if self.match(myMove,1):
-            return 1
-        
-        oppActions = [i for i, x in enumerate(myMove) if x == 0]
-        if len(oppActions)==0:
-            return 0
-        p=1/len(oppActions)
-        r=0
-        for action in oppActions:
-           oppMove=list(myMove)
-           oppMove[action]=-1
-           oppMove=tuple(oppMove)
-           if self.match(oppMove,-1):
-               r+=p * -1
-           elif len(oppActions)==1:
-              r+=p * 0
-           else:
-               r+=p * self.obtain(self.stateValues,oppMove)
-        return r
 
-
-        
 
     
